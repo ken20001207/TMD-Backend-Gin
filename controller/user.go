@@ -4,6 +4,7 @@ import (
 	"TMD-Backend-Go/models"
 	"TMD-Backend-Go/utils"
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
@@ -33,6 +34,7 @@ func (r *Controller) GetUsersHandler(c *gin.Context) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		res = append(res, result)
 	}
 
@@ -43,9 +45,48 @@ func (r *Controller) GetUsersHandler(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-/* Register API */
 func (r *Controller) PostUsersHandler(c *gin.Context) {
 
+}
+
+func (r *Controller) GetUserHandler(c *gin.Context) {
+	res := models.User{
+		PasswordMD5: "passwordMd5",
+		NickName:    "nickname",
+	}
+
+	c.JSON(200, res)
+
+}
+
+func (r *Controller) PostUserHandler(c *gin.Context) {
+
+}
+
+func (r *Controller) LoginHandler(c *gin.Context) {
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	ctx := context.Background()
+	var user models.User
+	res := r.DB.Collection("user").FindOne(ctx, bson.D{{"email", email}})
+
+	err := res.Decode(&user)
+
+	if err != nil {
+		_ = c.Error(fmt.Errorf("EMAIL_OR_PASSWORD_WRONG"))
+		return
+	}
+
+	if !utils.CheckPasswordHash(password, user.PasswordMD5) {
+		_ = c.Error(fmt.Errorf("EMAIL_OR_PASSWORD_WRONG"))
+		return
+	}
+
+	c.JSON(200, user)
+}
+
+func (r *Controller) RegisterHandler(c *gin.Context) {
 	userCollection := r.DB.Collection("user")
 
 	ctx := context.Background()
@@ -70,18 +111,4 @@ func (r *Controller) PostUsersHandler(c *gin.Context) {
 	}
 
 	c.JSON(200, createdUser)
-}
-
-func (r *Controller) GetUserHandler(c *gin.Context) {
-	res := models.User{
-		PasswordMD5: "passwordMd5",
-		NickName:    "nickname",
-	}
-
-	c.JSON(200, res)
-
-}
-
-func (r *Controller) PostUserHandler(c *gin.Context) {
-
 }
