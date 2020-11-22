@@ -1,5 +1,7 @@
 # TMD-Backend-Gin
 
+This is a very basic backend service of a Todolist with user system.
+
 I am using this project to learn Golang and Gin Gonic Framework.
 
 ## Quick start
